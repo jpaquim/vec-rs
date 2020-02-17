@@ -2,7 +2,7 @@ use std::mem;
 use std::ptr::{self, NonNull};
 
 pub struct Vec<T> {
-    ptr: Option<NonNull<T>>,
+    ptr: Unique<T>,
     cap: usize,
     len: usize,
 }
@@ -11,12 +11,17 @@ impl<T> Vec<T> {
     pub fn new() -> Self {
         assert!(mem::size_of::<T>() != 0, "We're not ready to handle ZSTs");
         Vec {
-            ptr: None,
+            ptr: Unique(None),
             len: 0,
             cap: 0,
         }
     }
 }
+
+struct Unique<T>(Option<NonNull<T>>);
+
+unsafe impl<T: Send> Send for Unique<T> {}
+unsafe impl<T: Sync> Sync for Unique<T> {}
 
 #[cfg(test)]
 mod tests {
